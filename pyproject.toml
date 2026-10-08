@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analise-legislativa-emendas-destaques"
+version = "0.1.0"
+description = "Núcleo de referência para análise de destaques e emendas em votação na Câmara dos Deputados"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx>=0.27,<1",
+  "PyMuPDF>=1.24,<2",
+  "pypdf>=5,<7",
+  "python-docx>=1.1,<2",
+  "jsonschema>=4.18,<5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=9,<10"]
+
+[project.scripts]
+analise-legislativa = "analise_legislativa.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+analise_legislativa = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mauricioaugustotse/analise-legislativa-emendas-destaques/blob/main/src/analise_legislativa/schemas/result.schema.json",
+  "title": "Resultado de análise legislativa v1.0",
+  "description": "Saída de `analyze`, atualizada por `validate`. Nenhum status significa aprovação.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "run_id", "results"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "run_id": {"type": "string"},
+    "results": {"type": "array", "items": {"$ref": "#/$defs/result"}}
+  },
+  "$defs": {
+    "result": {
+      "type": "object", "additionalProperties": false,
+      "required": ["case_id", "status", "analysis", "evidence_ids", "warnings"],
+      "properties": {
+        "case_id": {"type": "string"},
+        "status": {"enum": ["pending_review", "review_required", "failed"]},
+        "analysis": {"anyOf": [{"type": "null"}, {"$ref": "analysis.schema.json#/$defs/analysis"}]},
+        "evidence_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: Serviço interno de análise de emendas e destaques
+  version: 1.0.0
+  description: |
+    Recebe um caso preparado pelo parser determinístico (alvo, operação pretendida e evidências literais com IDs)
+    e as instruções de redação do pipeline; devolve a análise estruturada. O pipeline não confia na resposta:
+    `validate` confere schema, citações, números e coerência com o objeto. Implementação de referência:
+    examples/analisador_referencia.py.
+servers:
+  - url: http://localhost:8080
+paths:
+  /analyze:
+    post:
+      summary: Analisa um destaque ou uma emenda a partir das evidências recebidas
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [schema_version, case, instructions]
+              properties:
+                schema_version:
+                  const: '1.0'
+                case:
+                  $ref: '../src/analise_legislativa/schemas/case.schema.json#/$defs/case'
+                instructions:
+                  type: string
+                  description: Regras de redação e de conteúdo para o modo do caso (analyze.instructions_for).
+      responses:
+        '200':
+          description: Análise estruturada; a validade factual é verificada depois, pelo pipeline.
+          content:
+            application/json:
+              schema:
+                $ref: '../src/analise_legislativa/schemas/analysis.schema.json'
+        '400':
+          description: Pacote fora do contrato.
+        '401':
+          description: Token ausente ou inválido.
+        '429':
+          description: Limite temporário; responder Retry-After numérico em segundos quando possível.
+        '500':
+          description: Falha temporária do serviço.
+        '502':
+          description: Falha do modelo de linguagem ou resposta fora do schema.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mauricioaugustotse/analise-legislativa-emendas-destaques/blob/main/src/analise_legislativa/schemas/manifest.schema.json",
+  "title": "Manifesto de fontes legislativas v1.0",
+  "description": "Saída de `collect`: o que foi obtido, de onde, quando e com que hash; e o que falhou.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "proposition", "documents", "warnings", "failures"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "pattern": "^[0-9a-f]{20}$"},
+    "proposition": {
+      "type": "object", "required": ["id", "sigla", "numero", "ano"],
+      "properties": {
+        "id": {"type": ["integer", "null"]}, "sigla": {"type": "string"},
+        "numero": {"type": "integer"}, "ano": {"type": "integer"}
+      }, "additionalProperties": true
+    },
+    "documents": {"type": "array", "items": {"$ref": "#/$defs/document"}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "failures": {"type": "array", "items": {"$ref": "#/$defs/failure"}}
+  },
+  "$defs": {
+    "document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_id", "role", "kind", "number", "year", "proposition_id", "url", "path", "sha256", "retrieved_at", "metadata"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1, "description": "camara:<id>, congresso:<id> ou local:<hash>"},
+        "role": {"enum": ["destaque", "emenda", "parecer", "texto_principal", "substitutivo", "apoio"]},
+        "kind": {"type": "string", "description": "Sigla do tipo (DTQ, EMP, EMC, PRLP, SBT, PLV...)"},
+        "number": {"type": "integer"}, "year": {"type": "integer"},
+        "proposition_id": {"type": ["integer", "null"]},
+        "url": {"type": "string"}, "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "retrieved_at": {"type": "string"},
+        "metadata": {"type": "object", "description": "Ementa (description), data ISO (date), proposição; contexto, nunca prova"}
+      }
+    },
+    "failure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_id", "role", "kind", "number", "date", "reason"],
+      "properties": {
+        "source_id": {"type": "string"}, "role": {"type": "string"}, "kind": {"type": "string"},
+        "number": {"type": "integer"}, "date": {"type": "string"}, "reason": {"type": "string"}
+      }
+    }
+  }
+}

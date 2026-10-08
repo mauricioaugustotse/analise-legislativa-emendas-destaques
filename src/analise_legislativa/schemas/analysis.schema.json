@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mauricioaugustotse/analise-legislativa-emendas-destaques/blob/main/src/analise_legislativa/schemas/analysis.schema.json",
+  "title": "Resposta do serviço de análise v1.0",
+  "description": "Corpo que o serviço interno devolve em POST /analyze para um caso.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "analysis", "evidence_ids"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "analysis": {"$ref": "#/$defs/analysis"},
+    "evidence_ids": {"$ref": "#/$defs/citations"}
+  },
+  "$defs": {
+    "analysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "summary_evidence_ids", "material_effect", "material_effect_evidence_ids", "claims",
+                   "change_kind", "assessment", "uncertainties"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "description": "Parágrafo único para leitura em plenário (55 a 75 palavras), efeito material na 1ª frase"},
+        "summary_evidence_ids": {"$ref": "#/$defs/citations"},
+        "material_effect": {"type": "string", "minLength": 1, "description": "O efeito material pretendido, em uma frase"},
+        "material_effect_evidence_ids": {"$ref": "#/$defs/citations"},
+        "claims": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false,
+          "required": ["text", "evidence_ids"], "properties": {
+            "text": {"type": "string", "minLength": 1}, "evidence_ids": {"$ref": "#/$defs/citations"}
+          }}},
+        "change_kind": {"enum": ["supressao_pretendida", "inclusao_emenda", "nova_redacao", "acrescimo", "supressao",
+                                 "substituicao", "renumeracao", "ajuste_redacao", "indeterminada"]},
+        "assessment": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/assessment"}]},
+        "uncertainties": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "assessment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["category", "justification", "evidence_ids"],
+      "description": "Veredito de substancialidade; null para emenda de redação",
+      "properties": {
+        "category": {"enum": ["substancial_ricd", "sem_ajuste_ricd", "merito", "pontual", "nao"]},
+        "justification": {"type": "string", "minLength": 1},
+        "evidence_ids": {"$ref": "#/$defs/citations"}
+      }
+    },
+    "citations": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

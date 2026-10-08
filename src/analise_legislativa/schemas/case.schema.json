@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mauricioaugustotse/analise-legislativa-emendas-destaques/blob/main/src/analise_legislativa/schemas/case.schema.json",
+  "title": "Pacote de casos legislativos v1.0",
+  "description": "Saída de `prepare`: um caso por destaque ou emenda, com alvo, operação pretendida e evidências literais.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "run_id", "warnings", "cases"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "run_id": {"type": "string"},
+    "warnings": {"type": "array", "items": {"type": "string"}, "description": "Avisos do lote (coleta e extração)"},
+    "cases": {"type": "array", "items": {"$ref": "#/$defs/case"}}
+  },
+  "$defs": {
+    "operation": {
+      "enum": ["supressao_pretendida", "inclusao_emenda", "nova_redacao", "acrescimo", "supressao",
+               "substituicao", "renumeracao", "ajuste_redacao", "indeterminada"]
+    },
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["case_id", "source_id", "role", "object_type", "object_number", "mode", "operation", "ricd_basis",
+                   "target", "additional_targets", "linked_amendment_ref", "linked_amendment_id", "evidence",
+                   "warnings", "notes", "review_required"],
+      "properties": {
+        "case_id": {"type": "string"}, "source_id": {"type": "string"},
+        "role": {"enum": ["destaque", "emenda"]},
+        "object_type": {"type": "string"}, "object_number": {"type": "integer"},
+        "mode": {"enum": ["dvs", "destaque_emenda", "emenda", "emenda_redacao", "indefinido"]},
+        "operation": {"$ref": "#/$defs/operation"},
+        "ricd_basis": {"type": "string", "description": "Inciso do art. 161 do RICD citado no requerimento, se houver"},
+        "target": {"$ref": "#/$defs/target"},
+        "additional_targets": {"type": "array", "items": {"$ref": "#/$defs/target"}},
+        "linked_amendment_ref": {
+          "anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["sigla", "number"],
+                     "properties": {"sigla": {"type": "string"}, "number": {"type": "integer"}}}]
+        },
+        "linked_amendment_id": {"type": ["string", "null"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "warnings": {"type": "array", "items": {"type": "string"}, "description": "Pendências que exigem revisão"},
+        "notes": {"type": "array", "items": {"type": "string"}, "description": "Informações que não bloqueiam"},
+        "review_required": {"type": "boolean"}
+      }
+    },
+    "target": {
+      "type": "object", "additionalProperties": false,
+      "required": ["article", "paragraph", "caput", "inciso", "alinea", "item", "expression", "container_article",
+                   "amended_norm", "text_role", "operation", "raw"],
+      "properties": {
+        "article": {"type": "string", "description": "\"144\", \"144-A\", \"1-1\""},
+        "paragraph": {"type": "string", "description": "\"2\", \"2-F\" ou \"unico\""},
+        "caput": {"type": "boolean"},
+        "inciso": {"type": "string", "description": "\"II\", \"XLVI-A\""},
+        "alinea": {"type": "string"}, "item": {"type": "string"},
+        "expression": {"type": "string", "description": "Expressão destacada ou alterada, entre aspas no original"},
+        "container_article": {"type": "string", "description": "Artigo da proposição que contém a alteração (\"no art. 1º da PEC\")"},
+        "amended_norm": {"type": "string", "description": "Norma alterada a que o dispositivo pertence (\"Constituição Federal\", \"Decreto-Lei 1804/1980\")"},
+        "text_role": {"enum": ["texto_principal", "substitutivo"]},
+        "operation": {"anyOf": [{"$ref": "#/$defs/operation"}, {"const": ""}]},
+        "raw": {"type": "string", "description": "Cláusula de onde o alvo foi lido"}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidence_id", "source_id", "page", "block", "start", "end", "quote", "kind"],
+      "properties": {
+        "evidence_id": {"type": "string"}, "source_id": {"type": "string"},
+        "page": {"type": ["integer", "null"]}, "block": {"type": ["integer", "null"]},
+        "start": {"type": "integer", "minimum": 0}, "end": {"type": "integer", "minimum": 1},
+        "quote": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["requerimento_ou_emenda", "emenda_vinculada", "dispositivo", "expressao", "redacao_vigente"]}
+      }
+    }
+  }
+}
